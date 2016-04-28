@@ -1,2 +1,2 @@
-# SEmInR_det
-deterministic SEmInR compartmental model
+# SEmInR
+Implementations of the SEmInR compartmental model
