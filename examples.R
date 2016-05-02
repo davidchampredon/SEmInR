@@ -70,6 +70,13 @@ cival <- CI.llk.sample(CIlevel = 0.95,
 					   inc.obs = inc.obs,
 					   prop.search = 0.5)
 
+M <- matrix(unlist(cival), ncol=length(prm.fitted),byrow = T)
+if("R0" %in% names(prm.fitted)){
+	j <- which(names(prm.fitted)=="R0")
+	R0.lo <- min(M[,j])
+	R0.hi <- max(M[,j])
+}
+
 # Simulate forward with fitted data (point estimate):
 sim.fit <- simul.SEmInR.det(prm.fitted, prm.fxd)
 df.fit  <- sim.fit$ts

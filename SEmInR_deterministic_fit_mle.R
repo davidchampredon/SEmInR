@@ -170,7 +170,7 @@ CI.llk.sample <- function(CIlevel, nsample,
 	# sample parameter values.
 	vp.inside <- list()
 	for(i in 1:nsample){
-		print(paste('sampling',i,'/',nsample))
+		if(i%%10==0) print(paste('sampling',i,'/',nsample))
 		radius2 <- radius/incr.radius*runif(1,0,1)
 		vp.inside[[i]] <- prm.fitted +radius2*rbinom(n=nf,1,0.5)
 	}
