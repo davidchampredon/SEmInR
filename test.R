@@ -15,11 +15,11 @@ t1 <- as.numeric(Sys.time())
 prm.to.fit <- c(
 	latent_mean     = 4,
 	infectious_mean = 2,
-	popSize         = 10000,
-	R0              = 1.9)
+	popSize         = 10E6,
+	R0              = 3.3)
 
 prm.fxd <-  c(
-	horizon = 100,
+	horizon = 200,
 	nE = 2,
 	nI = 2,
 	init_I1 = 1,
@@ -34,7 +34,9 @@ true.inc <- df$inc
 tt <- df$time
 t.obs <- seq(5,40,by=5)
 round.inc <- ceiling(true.inc[tt %in% t.obs])
-inc.obs <- rpois(n=length(t.obs), lambda = round.inc)
+
+# inc.obs <- rpois(n=length(t.obs), lambda = round.inc)
+inc.obs <- c(4,6,6,8,9,11,12,15) ; plot(inc.obs,log='y')
 
 # Test likelihood function:
 llk <- llk.pois(prm.to.fit,
@@ -111,7 +113,7 @@ plot(tt,true.inc,
 	 xlab = 'time',
 	 ylab = 'incidence',
 	 las = 1,
-	 log = '')
+	 log = 'y')
 lines(df.fit$time,inc.best, 
 	  lwd = 2,
 	  typ='l')
