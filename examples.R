@@ -13,15 +13,15 @@ t1 <- as.numeric(Sys.time())
 
 # Simple simulation:
 prm.to.fit <- c(
-	latent_mean     = 4,
 	infectious_mean = 2,
 	popSize         = 10000,
-	R0              = 1.9)
+	R0              = 1.55)
 
 prm.fxd <-  c(
-	horizon = 100,
-	nE = 2,
-	nI = 2,
+	horizon = 150,
+	latent_mean     = 1.5,	
+	nE = 5,
+	nI = 5,
 	init_I1 = 1,
 	n.time.steps = 500,
 	per.capita = FALSE
@@ -36,29 +36,38 @@ t.obs <- seq(5,40,by=5)
 round.inc <- ceiling(true.inc[tt %in% t.obs])
 inc.obs <- rpois(n=length(t.obs), lambda = round.inc)
 
+# uncomment for non-model generated synthetic data:
+inc.obs <- c(4,6,6,8,11,12,15,25,50,68)
+t.obs <- 1:length(inc.obs)
+
 # Test likelihood function:
 llk <- llk.pois(prm.to.fit,
 				prm.fxd, 
 				t.obs,
 				inc.obs = inc.obs)
+prm.to.fit
+prm.fxd
+t.obs
+inc.obs
 print(llk)
 
 # Fit SEmInR model to incidence data:
-boundaries <- matrix(data=c(0.5,5,
-							0.6,4,
-							0.88,7),
+boundaries <- matrix(data=c(0.1,10,
+							100,1E7,
+							0.1,9),
 					 ncol = 2, byrow = TRUE)
 
 init.prm.fit <- prm.to.fit*runif(n=length(prm.to.fit),0.5,2)
+init.prm.fit
 
 FIT <- fit.mle.SEmInR(prm.to.fit = init.prm.fit, 
 					  prm.fxd, 
 					  t.obs, 
 					  inc.obs = inc.obs,
-					  # lower=boundaries[,1], 
-					  # upper=boundaries[,2], 
-					  method = "SANN",#"SANN",# "CG",# "Nelder-Mead",#'SANN',#"L-BFGS-B",
-					  maxit = 80)
+					  lower=boundaries[,1], 
+					  upper=boundaries[,2], 
+					  method = "L-BFGS-B",#"SANN",# "CG",# "Nelder-Mead",#'SANN',#"L-BFGS-B",
+					  maxit = 400)
 prm.fitted <- FIT[['prm.fitted']]
 llkmin     <- FIT[['llkmin']]    
 
@@ -103,6 +112,9 @@ if(FALSE){  # <-- take some time and not used, just for example.
 #  - - - Plots - - - #
 
 inc.best <- df.fit$inc
+print("inc.best:") ; print(inc.best)
+
+par(mfrow=c(1,1))
 plot(tt,true.inc,
 	 typ = 'l',
 	 lty = 2,
