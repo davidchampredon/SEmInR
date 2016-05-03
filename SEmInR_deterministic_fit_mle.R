@@ -2,6 +2,7 @@
 ###  MAXIMUM LIKELIHOOD FIT FOR A DETERMINISTIC SEmInR
 ###
 
+library(bbmle)
 
 llk.pois <- function(prm.to.fit, prm.fxd, t.obs, inc.obs) {
 	### RETURNS POISSON LIKELIHOOD GIVEN INCIDENCE DATA
@@ -13,6 +14,33 @@ llk.pois <- function(prm.to.fit, prm.fxd, t.obs, inc.obs) {
 	llk <- -sum(dpois(x = inc.obs, lambda=sim.inc, log=TRUE))
 	return(llk)
 }
+
+llk.pois.mle2 <- function(latent_mean     ,
+						  infectious_mean ,
+						  popSize         ,
+						  R0              ,
+						  horizon,
+						  nE,
+						  nI,
+						  init_I1,
+						  t.obs, inc.obs) {
+	
+	prm.to.fit <- c(latent_mean=latent_mean     ,
+					infectious_mean= infectious_mean,
+					popSize=  popSize       ,
+					R0=  R0            )
+	prm.fxd <- c(horizon=horizon,
+				 nE=nE,
+				 nI=nI,
+				 init_I1=init_I1,
+				 n.time.steps = 500,
+				 per.capita = FALSE)
+	
+	llk <- llk.pois(prm.to.fit, prm.fxd, t.obs, inc.obs) 
+	
+	return(llk)
+}
+
 
 
 fit.mle.SEmInR <- function(prm.to.fit, prm.fxd, 
@@ -34,6 +62,26 @@ fit.mle.SEmInR <- function(prm.to.fit, prm.fxd,
 	llkmin <- param.fit$value
 	return(list(prm.fitted=prm.fitted, llkmin=llkmin))
 }
+
+
+fit.mle2.SEmInR <- function(latent_mean     ,
+							infectious_mean ,
+							popSize         ,
+							R0              ,
+							horizon,
+							nE,
+							nI,
+							init_I1,
+							t.obs, inc.obs){
+	
+	m <- mle2(minuslogl = llk.pois.mle2, 
+			  start = list(latent_mean=latent_mean,infectious_mean=infectious_mean,
+			  			 popSize=popSize,R0=R0),
+			  fixed = list(horizon=horizon,nE=nE,nI=nI,init_I1=init_I1,
+			  			 t.obs=t.obs,inc.obs=inc.obs))
+	return(list(prm.fitted=prm.fitted, llkmin=llkmin))
+}
+
 
 sf.outer <- function(x,y,fun, ...) {
 	### PARALLEL VERSION OF 'outer' FUNCTION
