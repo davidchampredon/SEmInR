@@ -57,7 +57,10 @@ fit.mle.SEmInR <- function(prm.to.fit, prm.fxd,
 					   method  = method, #'SANN',"L-BFGS-B",
 					   lower   = lower, 
 					   upper   = upper,
-					   control = list(trace = 2, maxit = maxit))
+					   control = list(trace = 9
+					   			   ,maxit = maxit
+					   			   # ,reltol = 1e-7
+					   			   ))
 	prm.fitted <- param.fit$par
 	llkmin <- param.fit$value
 	return(list(prm.fitted=prm.fitted, llkmin=llkmin))
