@@ -1,7 +1,7 @@
 library(snowfall)
 # source("SEmInR_deterministic.R")
 
-
+### Summary statistics
 sum.stat <- function(target, x){
 	n <- length(target)
 	
@@ -33,7 +33,7 @@ sum.stat <- function(target, x){
 	return(s2)
 }
 
-
+### Sample parameter values from prior distributions
 sample.priors <- function(priors, n){
 	
 	# number of parameters that will be sampled:
@@ -49,8 +49,8 @@ sample.priors <- function(priors, n){
 	return(M)
 }
 
-
-fct.wrap <- function(i, t.obs, M, prm.fxd, nABC){
+### Wrap function for snowfall (parallel execution)
+fct.wrap <- function(i, t.obs, inc.obs,  M, prm.fxd, nABC){
 	sim <- simul.SEmInR.det(prm.to.fit = M[i,], prm.fxd)
 	df  <- sim$ts
 	inc <- df$inc
@@ -64,7 +64,9 @@ fct.wrap <- function(i, t.obs, M, prm.fxd, nABC){
 	return(sum.stat(target = inc.obs, x = inc[idx]))
 }
 
-fit.ABC.SEmInR <- function(t.obs, inc.obs, prm.fxd, priors.prm.to.fit, 
+## Fit SEmInR with ABC
+fit.ABC.SEmInR <- function(t.obs, inc.obs, 
+						   prm.fxd, priors.prm.to.fit, 
 						   nABC, post.prop){
 	
 	M <- sample.priors(priors.prm.to.fit, nABC)
@@ -74,7 +76,7 @@ fit.ABC.SEmInR <- function(t.obs, inc.obs, prm.fxd, priors.prm.to.fit,
 	sfLibrary(deSolve)
 	sfExportAll()
 	ss <- sfSapply(x = 1:nABC, fun = fct.wrap, 
-				   t.obs=t.obs, 
+				   t.obs=t.obs, inc.obs=inc.obs,
 				   M=M, prm.fxd=prm.fxd, nABC=nABC, 
 				   simplify = FALSE)
 	sfStop()
@@ -85,5 +87,30 @@ fit.ABC.SEmInR <- function(t.obs, inc.obs, prm.fxd, priors.prm.to.fit,
 	Mpost <- M[1:thres.row,]
 	return(list(posteriors=Mpost, priors=priors))
 }
+
+
+### Sample incidence from posterior distribution
+### and return median and credible interval
+post.incidence <- function(Mpost,t,CI){
+	Mpost2 <- Mpost[,-ncol(Mpost)]
+	n <- nrow(Mpost2)
+	inc.post <- matrix(ncol=nrow(Mpost2),nrow=length(t))
+	for(i in 1:n){
+		if(i%%10==0) cat('post incidence for SEmInR ',i,'/',n,'\n')
+		sim <- simul.SEmInR.det(prm.to.fit=Mpost2[i,], prm.fxd)
+		df  <- sim$ts
+		inc.post[,i] <- df$inc
+	}
+	inc.md <- apply(X = inc.post,MARGIN = 1, FUN = quantile, probs= 0.5)
+	inc.lo <- apply(X = inc.post,MARGIN = 1, FUN = quantile, probs= 0.5-CI/2)
+	inc.hi <- apply(X = inc.post,MARGIN = 1, FUN = quantile, probs= 0.5+CI/2)
+	
+	return(list(inc.md=inc.md, inc.lo=inc.lo, inc.hi=inc.hi))
+}
+
+
+
+
+
 
 

@@ -44,7 +44,7 @@ inc.obs <- rpois(n=length(t.obs), lambda = round.inc)
 # plot(true.inc)
 
 
-nABC <- 1E4
+nABC <- 1E3
 post.prop <- 0.01
 nABC*post.prop  
 CI <- 0.95
@@ -74,20 +74,10 @@ for(j in 1:(ncol(Mpost)-1)){
 
 # Sample from posteriors:
 
-Mpost2 <- Mpost[,-ncol(Mpost)]
-
-inc.post <- matrix(ncol=nrow(Mpost2),nrow=length(tt))
-for(i in 1:nrow(Mpost2)){
-	if(i%%10==0) print(i)
-	sim <- simul.SEmInR.det(prm.to.fit=Mpost2[i,], prm.fxd)
-	df  <- sim$ts
-	inc.post[,i] <- df$inc
-	# lines(tt,inc.post[,i],col=rgb(1,0,0,0.2))
-}
-inc.md <- apply(X = inc.post,MARGIN = 1, FUN = quantile, probs= 0.5)
-inc.lo <- apply(X = inc.post,MARGIN = 1, FUN = quantile, probs= 0.5-CI/2)
-inc.hi <- apply(X = inc.post,MARGIN = 1, FUN = quantile, probs= 0.5+CI/2)
-
+postinc <- post.incidence(Mpost, t=tt, CI)
+inc.md <- postinc[['inc.md']]
+inc.lo <- postinc[['inc.lo']]
+inc.hi <- postinc[['inc.hi']]
 
 
 myplot <- function(dolog,showall=FALSE){
