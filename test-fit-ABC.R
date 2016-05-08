@@ -40,8 +40,9 @@ round.inc <- ceiling(true.inc[idx])
 
 inc.obs <- rpois(n=length(t.obs), lambda = round.inc)
 #inc.obs <- c(4,6,6,8,9,11,12,15) ; plot(inc.obs,log='y')
-# inc.obs <- c(1,3,1,8,9,15,19,23)
-# plot(true.inc)
+inc.obs <- c(2,9,7,9,23,13,12)
+t.obs <- 1:length(inc.obs)
+plot(inc.obs, log='y')
 
 
 nABC <- 1E3
@@ -74,7 +75,7 @@ for(j in 1:(ncol(Mpost)-1)){
 
 # Sample from posteriors:
 
-postinc <- post.incidence(Mpost, t=tt, CI)
+postinc <- post.incidence(Mpost, CI)
 inc.md <- postinc[['inc.md']]
 inc.lo <- postinc[['inc.lo']]
 inc.hi <- postinc[['inc.hi']]
@@ -86,8 +87,9 @@ myplot <- function(dolog,showall=FALSE){
 	lines(tt,inc.md,col=rgb(1,0,0),lwd=2)
 	lines(tt,inc.lo,col=rgb(1,0,0,0.5))
 	lines(tt,inc.hi,col=rgb(1,0,0,0.5))
+	inc.post <- postinc[['inc.post']]
 	if(showall){
-		for(i in 1:ncol(inc.post)) lines(tt,inc.post[,i],col=rgb(1,0,0,0.1))
+		for(i in 1:ncol(inc.post)) lines(tt, inc.post[,i],col=rgb(1,0,0,0.1))
 	}
 }
 

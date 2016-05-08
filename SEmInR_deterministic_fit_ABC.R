@@ -85,27 +85,32 @@ fit.ABC.SEmInR <- function(t.obs, inc.obs,
 	M <- M[order(M[,'ss']),]
 	thres.row <- round(nABC*post.prop)
 	Mpost <- M[1:thres.row,]
-	return(list(posteriors=Mpost, priors=priors))
+	return(list(posteriors = Mpost, 
+				priors = priors.prm.to.fit))
 }
 
 
 ### Sample incidence from posterior distribution
 ### and return median and credible interval
-post.incidence <- function(Mpost,t,CI){
+post.incidence <- function(Mpost,CI){
 	Mpost2 <- Mpost[,-ncol(Mpost)]
 	n <- nrow(Mpost2)
-	inc.post <- matrix(ncol=nrow(Mpost2),nrow=length(t))
 	for(i in 1:n){
 		if(i%%10==0) cat('post incidence for SEmInR ',i,'/',n,'\n')
 		sim <- simul.SEmInR.det(prm.to.fit=Mpost2[i,], prm.fxd)
 		df  <- sim$ts
-		inc.post[,i] <- df$inc
+		if(i==1) inc.post <- df$inc
+		if(i>1)  inc.post <- cbind(inc.post,df$inc)
 	}
-	inc.md <- apply(X = inc.post,MARGIN = 1, FUN = quantile, probs= 0.5)
-	inc.lo <- apply(X = inc.post,MARGIN = 1, FUN = quantile, probs= 0.5-CI/2)
-	inc.hi <- apply(X = inc.post,MARGIN = 1, FUN = quantile, probs= 0.5+CI/2)
+	inc.md <- apply(X = inc.post, MARGIN = 1, FUN = quantile, probs= 0.5)
+	inc.lo <- apply(X = inc.post, MARGIN = 1, FUN = quantile, probs= 0.5-CI/2)
+	inc.hi <- apply(X = inc.post, MARGIN = 1, FUN = quantile, probs= 0.5+CI/2)
 	
-	return(list(inc.md=inc.md, inc.lo=inc.lo, inc.hi=inc.hi))
+	return(list(inc.post=inc.post, 
+				inc.md=inc.md, 
+				inc.lo=inc.lo, 
+				inc.hi=inc.hi,
+				time = df$time))
 }
 
 
