@@ -4,9 +4,10 @@
 
 library(bbmle)
 
+### RETURNS POISSON LIKELIHOOD GIVEN INCIDENCE DATA
+### (assume Poisson distributed observation errors)
 llk.pois <- function(prm.to.fit, prm.fxd, t.obs, inc.obs, logparam = FALSE) {
-	### RETURNS POISSON LIKELIHOOD GIVEN INCIDENCE DATA
-	### (assume Poisson distributed observation errors)
+
 	
 	if(logparam) prm.to.fit <- exp(prm.to.fit)
 	
@@ -44,14 +45,13 @@ llk.pois.mle2 <- function(latent_mean     ,
 }
 
 
-
+### FIT A SEmInR MODEL TO INCIDENCE OBSERVATIONS
+### (observation error ~ Poisson)
 fit.mle.SEmInR <- function(prm.to.fit, prm.fxd, 
 						   t.obs, inc.obs,
 						   logparam,
 						   method,
 						   upper=Inf, lower=-Inf, maxit = 500){
-	### FIT A SEmInR MODEL TO INCIDENCE OBSERVATIONS
-	### (observation error ~ Poisson)
 	param.fit <- optim(par     = prm.to.fit,
 					   fn      = llk.pois,
 					   prm.fxd = prm.fxd,
@@ -71,7 +71,6 @@ fit.mle.SEmInR <- function(prm.to.fit, prm.fxd,
 	return(list(prm.fitted=prm.fitted, llkmin=llkmin))
 }
 
-
 fit.mle2.SEmInR <- function(latent_mean     ,
 							infectious_mean ,
 							popSize         ,
@@ -89,7 +88,6 @@ fit.mle2.SEmInR <- function(latent_mean     ,
 			  			 t.obs=t.obs,inc.obs=inc.obs))
 	return(list(prm.fitted=prm.fitted, llkmin=llkmin))
 }
-
 
 sf.outer <- function(x,y,fun, ...) {
 	### PARALLEL VERSION OF 'outer' FUNCTION
@@ -190,15 +188,13 @@ llk.surf <- function(grid.size, prm.to.fit,
 				pval = pval))
 }
 
+### Return parameter values that _should_ be in the CI region
 CI.llk.sample <- function(CIlevel, nsample,  
 						  prm.fitted, llkmin,
 						  prm.fxd, 
 						  t.obs, inc.obs,
 						  maxit = 50,
 						  prop.search = 0.5){
-	
-	### Return parameter values that _should_ be in the CI region
-	
 	nf    <- length(prm.fitted)
 	thres <- llkmin + qchisq(CIlevel,nf)/2
 	
