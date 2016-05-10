@@ -4,9 +4,11 @@
 
 library(bbmle)
 
-llk.pois <- function(prm.to.fit, prm.fxd, t.obs, inc.obs) {
+llk.pois <- function(prm.to.fit, prm.fxd, t.obs, inc.obs, logparam = FALSE) {
 	### RETURNS POISSON LIKELIHOOD GIVEN INCIDENCE DATA
 	### (assume Poisson distributed observation errors)
+	
+	if(logparam) prm.to.fit <- exp(prm.to.fit)
 	
 	sim <- simul.SEmInR.det(prm.to.fit, prm.fxd)
 	df  <- sim$ts
@@ -45,6 +47,7 @@ llk.pois.mle2 <- function(latent_mean     ,
 
 fit.mle.SEmInR <- function(prm.to.fit, prm.fxd, 
 						   t.obs, inc.obs,
+						   logparam,
 						   method,
 						   upper=Inf, lower=-Inf, maxit = 500){
 	### FIT A SEmInR MODEL TO INCIDENCE OBSERVATIONS
@@ -54,6 +57,7 @@ fit.mle.SEmInR <- function(prm.to.fit, prm.fxd,
 					   prm.fxd = prm.fxd,
 					   t.obs   = t.obs,
 					   inc.obs = inc.obs,
+					   logparam= logparam,
 					   method  = method, #'SANN',"L-BFGS-B",
 					   lower   = lower, 
 					   upper   = upper,
@@ -62,6 +66,7 @@ fit.mle.SEmInR <- function(prm.to.fit, prm.fxd,
 					   			   # ,reltol = 1e-7
 					   			   ))
 	prm.fitted <- param.fit$par
+	if(logparam) prm.fitted <- exp(prm.fitted)
 	llkmin <- param.fit$value
 	return(list(prm.fitted=prm.fitted, llkmin=llkmin))
 }

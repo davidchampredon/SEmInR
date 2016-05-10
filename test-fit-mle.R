@@ -13,17 +13,17 @@ t1 <- as.numeric(Sys.time())
 
 # Simple simulation:
 prm.to.fit <- c(
-	latent_mean     = 4,
 	infectious_mean = 2,
-	popSize         = 10E6,
-	R0              = 3.3)
+	popSize         = 1E5,
+	R0              = 2.0)
 
 prm.fxd <-  c(
+	latent_mean     = 2,
 	horizon = 200,
-	nE = 2,
-	nI = 2,
+	nE = 5,
+	nI = 5,
 	init_I1 = 1,
-	n.time.steps = 500,
+	n.time.steps = 1000,
 	per.capita = FALSE
 )
 
@@ -34,9 +34,13 @@ true.inc <- df$inc
 tt <- df$time
 t.obs <- seq(5,40,by=5)
 round.inc <- ceiling(true.inc[tt %in% t.obs])
+inc.obs <- rpois(n=length(t.obs), lambda = round.inc)
 
-# inc.obs <- rpois(n=length(t.obs), lambda = round.inc)
-inc.obs <- c(4,6,6,8,9,11,12,15) ; plot(inc.obs,log='y')
+mydebug <- TRUE
+if(mydebug){
+	inc.obs <- c(8,8,6,23,22,30,39,75,101,144) ; plot(inc.obs,log='y')
+	t.obs <- 1:length(inc.obs)
+}
 
 # Test likelihood function:
 llk <- llk.pois(prm.to.fit,
@@ -53,13 +57,20 @@ boundaries <- matrix(data=c(0.5,5,
 
 init.prm.fit <- prm.to.fit*runif(n=length(prm.to.fit),0.5,2)
 
+# Does the minimization is on the log of parameters?
+# (can be more stable, but only for POSITIVE parameters)
+logparam <- FALSE
+if(logparam) init.prm.fit <- log(init.prm.fit)
+
+
 FIT <- fit.mle.SEmInR(prm.to.fit = init.prm.fit, 
 					  prm.fxd, 
 					  t.obs, 
 					  inc.obs = inc.obs,
+					  logparam = logparam,
 					  # lower=boundaries[,1], 
 					  # upper=boundaries[,2], 
-					  method = "SANN",#"SANN",# "CG",# "Nelder-Mead",#'SANN',#"L-BFGS-B",
+					  method = "Nelder-Mead",#"SANN",# "CG",# "Nelder-Mead",#'SANN',#"L-BFGS-B",
 					  maxit = 80)
 prm.fitted <- FIT[['prm.fitted']]
 llkmin     <- FIT[['llkmin']]    
@@ -105,6 +116,7 @@ if(FALSE){  # <-- take some time and not used, just for example.
 #  - - - Plots - - - #
 
 inc.best <- df.fit$inc
+par(mfrow = c(1,1))
 plot(tt,true.inc,
 	 typ = 'l',
 	 lty = 2,
