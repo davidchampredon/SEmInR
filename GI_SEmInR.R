@@ -8,7 +8,7 @@
 # Proceedings of the Royal Society B: Biological Sciences 2015; 282: 20152026.
 # ===================================================================
 
-source("SEmInR_deterministic.R")
+# source("SEmInR_deterministic.R")
 library("deSolve")
 library("ggplot2")
 library("gridExtra")
