@@ -13,7 +13,7 @@ t1 <- as.numeric(Sys.time())
 
 # Simple simulation:
 prm.to.fit <- c(
-	infectious_mean = 2,
+	infectious_mean = 3,
 	popSize         = 1E5,
 	R0              = 2.0)
 
@@ -37,8 +37,9 @@ round.inc <- ceiling(true.inc[tt %in% t.obs])
 inc.obs <- rpois(n=length(t.obs), lambda = round.inc)
 
 mydebug <- TRUE
+
 if(mydebug){
-	inc.obs <- c(8,8,6,23,22,30,39,75,101,144) ; plot(inc.obs,log='y')
+	inc.obs <- c(2,5,8,10,12,17,28,25,39,45) ; plot(inc.obs,log='y')
 	t.obs <- 1:length(inc.obs)
 }
 
@@ -55,11 +56,14 @@ boundaries <- matrix(data=c(0.5,5,
 							0.88,7),
 					 ncol = 2, byrow = TRUE)
 
-init.prm.fit <- prm.to.fit*runif(n=length(prm.to.fit),0.5,2)
+init.prm.fit <-  c(
+	infectious_mean = 3,
+	popSize         = mean(inc.obs[1:3])/0.01,
+	R0              = 2.0)
 
 # Does the minimization is on the log of parameters?
 # (can be more stable, but only for POSITIVE parameters)
-logparam <- FALSE
+logparam <- TRUE
 if(logparam) init.prm.fit <- log(init.prm.fit)
 
 
@@ -116,19 +120,21 @@ if(FALSE){  # <-- take some time and not used, just for example.
 #  - - - Plots - - - #
 
 inc.best <- df.fit$inc
+idxplot <- inc.best>0
 par(mfrow = c(1,1))
-plot(tt,true.inc,
+plot(df.fit$time[idxplot],
+	 inc.best[idxplot],
 	 typ = 'l',
-	 lty = 2,
+	 lwd = 2,
 	 ylim = 1+range(inc.best,inc.ci.lo,inc.ci.hi),
 	 main = 'Maximum Likelihood fit of determinisitic SEmInR', 
 	 xlab = 'time',
 	 ylab = 'incidence',
 	 las = 1,
 	 log = 'y')
-lines(df.fit$time,inc.best, 
-	  lwd = 2,
-	  typ='l')
+lines(tt,true.inc, 
+	  lwd = 1,
+	  lty = 2)
 for(s in 1:length(cival)){
 	lines(df.fit$time,inc.CI[[s]], col=rgb(0,0,0,0.1))
 }
